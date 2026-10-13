@@ -67,6 +67,12 @@ uses `hyprctl keyword monitor`. Saving writes only
 runs `hyprctl reload` and `hyprctl configerrors`; if validation reports an
 error, the previous file is restored automatically.
 
+Saved rules match displays by description (`desc:`), so a layout survives
+connector names changing after a dock replug, resume, or reboot. Displays whose
+description is missing, or equals or prefixes another display's (including
+disabled ones), fall back to their connector name. Note that a second identical
+display connected later will also match a saved `desc:` rule.
+
 ## Remove
 
 Remove the Omarchy plugin:

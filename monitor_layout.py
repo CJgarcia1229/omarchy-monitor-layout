@@ -60,6 +60,23 @@ def run(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, text=True, capture_output=True, check=check)
 
 
+def output_selector(item: dict, raw: list[dict]) -> str:
+    description = item.get("description") or ""
+    others = [other.get("description") or "" for other in raw if other is not item]
+    ambiguous = any(
+        other.startswith(description) or description.startswith(other)
+        for other in others
+        if other
+    )
+    if not description or ambiguous:
+        return item["name"]
+    return f"desc:{description}"
+
+
+def lua_string(value: str) -> str:
+    return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
 def load_monitors() -> list[dict]:
     try:
         raw = json.loads(run("hyprctl", "monitors", "all", "-j").stdout)
@@ -83,6 +100,7 @@ def load_monitors() -> list[dict]:
             current_refresh = best_mode["refreshRate"]
         monitors.append({
             "name": item["name"],
+            "output": output_selector(item, raw),
             "description": item.get("description") or item["name"],
             "width": current_width,
             "height": current_height,
@@ -137,7 +155,7 @@ def monitor_rule(monitor: dict) -> str:
     mode = f'{monitor["width"]}x{monitor["height"]}@{refresh}'
     scale = f'{monitor["scale"]:g}'
     parts = [
-        f'output = "{monitor["name"]}"',
+        f'output = {lua_string(monitor["output"])}',
         f'mode = "{mode}"',
         f'position = "{monitor["x"]}x{monitor["y"]}"',
         f'scale = {scale}',
