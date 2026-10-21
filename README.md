@@ -14,6 +14,7 @@ refresh rate, and scale without hand-editing `monitors.lua`.
 - Per-display resolution, refresh-rate, scale, and exact X/Y controls
 - Fullscreen numbered display identification
 - Live preview before saving
+- Named saved layouts to switch between desk arrangements
 - Native Omarchy theme colors loaded from the active `colors.toml`
 - Timestamped configuration backups and automatic rollback on validation errors
 - Optional desktop application launcher and icon
@@ -56,6 +57,18 @@ To also register **Monitor Layout** in the desktop application launcher:
 4. Click **Preview** to apply the arrangement temporarily.
 5. Click **Save layout** to persist it to `~/.config/hypr/monitors.lua`.
 
+### Saved layouts
+
+Type a name and click **Save as** to keep the current arrangement, for example
+"Desk" and "Presenting". Saving under an existing name updates it. Pick a layout
+and click **Load** to switch your displays to it right away, then
+**Save layout** to keep it after logout. Layouts match displays by description, so displays
+that are not connected are skipped and a display missing from the layout keeps
+its current placement. A saved mode and scale are restored only if the display
+still offers that mode. Identical displays that share a description are told
+apart by connector name, as `monitors.lua` does. If the layouts file cannot be
+read, the editor leaves it untouched and asks you to fix or remove it.
+
 The canvas uses Hyprland's logical dimensions for correct pointer transitions.
 Each card separately shows its physical signal mode and scaled logical size.
 
@@ -66,6 +79,16 @@ uses `hyprctl keyword monitor`. Saving writes only
 `~/.config/hypr/monitors.lua`, after first making a timestamped backup. It then
 runs `hyprctl reload` and `hyprctl configerrors`; if validation reports an
 error, the previous file is restored automatically.
+
+Saved layouts are stored separately in
+`~/.local/state/omarchy/monitor-layouts.json` and never touch `monitors.lua`
+until you save a layout from the editor.
+
+Saved rules match displays by description (`desc:`), so a layout survives
+connector names changing after a dock replug, resume, or reboot. Displays whose
+description is missing, or equals or prefixes another display's (including
+disabled ones), fall back to their connector name. Note that a second identical
+display connected later will also match a saved `desc:` rule.
 
 ## Remove
 
