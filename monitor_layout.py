@@ -596,12 +596,10 @@ class MonitorWindow(Gtk.ApplicationWindow):
     def preview(self, _button):
         try:
             self.normalize()
-            for monitor in self.monitors:
-                refresh = f'{monitor["refreshRate"]:.3f}'.rstrip("0").rstrip(".")
-                rule = f'{monitor["name"]},{monitor["width"]}x{monitor["height"]}@{refresh},{monitor["x"]}x{monitor["y"]},{monitor["scale"]:g}'
-                if monitor["transform"]:
-                    rule += f',transform,{monitor["transform"]}'
-                run("hyprctl", "keyword", "monitor", rule)
+            rules = "\n".join(monitor_rule(monitor) for monitor in self.monitors)
+            result = run("hyprctl", "eval", rules, check=False)
+            if result.returncode or result.stdout.strip() != "ok":
+                raise RuntimeError((result.stdout or result.stderr).strip() or f"exit status {result.returncode}")
             self.status.set_label("Preview applied. Save to keep it after logout.")
             self.canvas.queue_draw()
             self.selection_changed(self.monitors[self.canvas.selected])
